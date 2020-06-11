@@ -372,6 +372,9 @@ int parse_tgc(file_handle *file, ExecutableFile *filesToPatch, u32 tgc_base, cha
 }
 
 int patch_gcm(file_handle *file, ExecutableFile *filesToPatch, int numToPatch) {
+	if(swissSettings.disablePatches)
+		return numToPatch;
+		
 	int i, num_patched = 0;
 	*(vu32*)VAR_EXECD_OFFSET = 0xFFFFFFFF;
 	// If the current device isn't SD via EXI, init one slot to write patches.

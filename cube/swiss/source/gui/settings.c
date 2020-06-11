@@ -61,7 +61,7 @@ static char *tooltips_network[PAGE_NETWORK_MAX+1] = {
 		"Init network at startup:\n\nDisabled - Do not initialise the BBA even if present (default)\nEnabled - If a BBA is present, it will be initialised at startup\n\nIf initialised, navigate to the IP in a web browser to backup various data"
 };
 
-static char *tooltips_game[PAGE_GAME_MAX+1] = {
+static char *tooltips_game_1[PAGE_GAME_1_MAX+1] = {
 	NULL,
 	NULL,
 	"Force Vertical Offset:\n\n+0 - Standard value\n-2 - GCVideo-DVI compatible (480i)\n-3 - GCVideo-DVI compatible (default)\n-4 - GCVideo-DVI compatible (240p)\n-12 - Datapath VisionRGB (480p)",
@@ -73,11 +73,19 @@ static char *tooltips_game[PAGE_GAME_MAX+1] = {
 	"Invert Camera Stick:\n\nNo - Leave C Stick as-is (default)\nX - Invert X-axis of the C Stick\nY - Invert Y-axis of the C Stick\nX&Y - Invert both axes of the C Stick"
 };
 
+static char* tooltips_game_2[PAGE_GAME_2_MAX+1] = {
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL
+};
+
 syssram* sram;
 syssramex* sramex;
 
 // Number of settings (including Back, Next, Save, Exit buttons) per page
-int settings_count_pp[5] = {PAGE_GLOBAL_MAX, PAGE_NETWORK_MAX, PAGE_ADVANCED_MAX, PAGE_GAME_DEFAULTS_MAX, PAGE_GAME_MAX};
+int settings_count_pp[7] = {PAGE_GLOBAL_MAX, PAGE_NETWORK_MAX, PAGE_ADVANCED_MAX, PAGE_GAME_1_DEFAULTS_MAX, PAGE_GAME_2_DEFAULTS_MAX, PAGE_GAME_1_MAX, PAGE_GAME_2_MAX};
 
 void refreshSRAM(SwissSettings *settings) {
 	sram = __SYS_LockSram();
@@ -111,11 +119,17 @@ char* get_tooltip(int page_num, int option) {
 	else if(page_num == PAGE_ADVANCED) {
 		textPtr = tooltips_advanced[option];
 	}
-	else if(page_num == PAGE_GAME_DEFAULTS) {
-		textPtr = tooltips_game[option];
+	else if(page_num == PAGE_GAME_1_DEFAULTS) {
+		textPtr = tooltips_game_1[option];
 	}
-	else if(page_num == PAGE_GAME) {
-		textPtr = tooltips_game[option];
+	else if(page_num == PAGE_GAME_2_DEFAULTS) {
+		textPtr = tooltips_game_2[option];
+	}
+	else if(page_num == PAGE_GAME_1) {
+		textPtr = tooltips_game_1[option];
+	}
+	else if(page_num == PAGE_GAME_2) {
+		textPtr = tooltips_game_2[option];
 	}
 	return textPtr;
 }
@@ -196,7 +210,7 @@ uiDrawObj_t* settings_draw_page(int page_num, int option, file_handle *file, Con
 		DrawAddChild(page, DrawStyledLabel(20, page_y_ofs + (page_y_line * option) + (page_y_line / 4), "*", 0.35f, false, disabledColor));
 	// Page specific buttons
 	if(page_num == PAGE_GLOBAL) {
-		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Global Settings (1/5):"));
+		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Global Settings (1/7):"));
 		drawSettingEntryString(page, &page_y_ofs, "System Sound:", swissSettings.sramStereo ? "Stereo":"Mono", option == SET_SYS_SOUND, true);
 		sprintf(sramHOffsetStr, "%+hi", swissSettings.sramHOffset);
 		drawSettingEntryString(page, &page_y_ofs, "Screen Position:", sramHOffsetStr, option == SET_SCREEN_POS, true);
@@ -210,7 +224,7 @@ uiDrawObj_t* settings_draw_page(int page_num, int option, file_handle *file, Con
 	}
 	else if(page_num == PAGE_NETWORK) {
 		bool netEnable = exi_bba_exists();
-		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Network Settings (2/5):"));	
+		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Network Settings (2/7):"));	
 		drawSettingEntryBoolean(page, &page_y_ofs, "Init network at startup:", swissSettings.initNetworkAtStart, option == SET_INIT_NET, netEnable);
 		drawSettingEntryString(page, &page_y_ofs, "FTP Host IP:", swissSettings.ftpHostIp, option == SET_FTP_HOSTIP, netEnable);
 		drawSettingEntryNumeric(page, &page_y_ofs, "FTP Port:", swissSettings.ftpPort, option == SET_FTP_PORT, netEnable);
@@ -222,7 +236,7 @@ uiDrawObj_t* settings_draw_page(int page_num, int option, file_handle *file, Con
 		drawSettingEntryString(page, &page_y_ofs, "FSP Password:", "*****", option == SET_FSP_PASS, netEnable);
 	}
 	else if(page_num == PAGE_ADVANCED) {
-		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Advanced Settings (3/5):"));
+		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Advanced Settings (3/7):"));
 		drawSettingEntryBoolean(page, &page_y_ofs, "USB Gecko Debug via Slot B:", swissSettings.debugUSB, option == SET_ENABLE_USBGECKODBG, true);
 		drawSettingEntryBoolean(page, &page_y_ofs, "Hide Unknown file types:", swissSettings.hideUnknownFileTypes, option == SET_HIDE_UNK, true);
 		drawSettingEntryBoolean(page, &page_y_ofs, "Stop DVD Motor on startup:", swissSettings.stopMotor, option == SET_STOP_MOTOR, true);
@@ -233,8 +247,8 @@ uiDrawObj_t* settings_draw_page(int page_num, int option, file_handle *file, Con
 		drawSettingEntryBoolean(page, &page_y_ofs, "Force DTV Status:", swissSettings.forceDTVStatus, option == SET_FORCE_DTVSTATUS, true);
 		drawSettingEntryBoolean(page, &page_y_ofs, "Boot through IPL:", swissSettings.bs2Boot, option == SET_BS2BOOT, true);
 	}
-	else if(page_num == PAGE_GAME_DEFAULTS) {
-		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Default Game Settings (4/5):"));
+	else if(page_num == PAGE_GAME_1_DEFAULTS) {
+		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Default Game Settings #1 (4/7):"));
 		bool enableGameVideoPatches = !swissSettings.disableVideoPatches;
 		drawSettingEntryString(page, &page_y_ofs, "Force Video Mode:", gameVModeStr[swissSettings.gameVMode], option == SET_DEFAULT_FORCE_VIDEOMODE, enableGameVideoPatches);
 		drawSettingEntryString(page, &page_y_ofs, "Force Horizontal Scale:", forceHScaleStr[swissSettings.forceHScale], option == SET_DEFAULT_HORIZ_SCALE, enableGameVideoPatches);
@@ -249,8 +263,12 @@ uiDrawObj_t* settings_draw_page(int page_num, int option, file_handle *file, Con
 		drawSettingEntryBoolean(page, &page_y_ofs, "Emulate Audio Streaming:", swissSettings.emulateAudioStreaming, option == SET_DEFAULT_AUDIO_STREAMING, true);
 		drawSettingEntryBoolean(page, &page_y_ofs, "Emulate Read Speed:", swissSettings.emulateReadSpeed, option == SET_DEFAULT_READ_SPEED, true);
 	}
-	else if(page_num == PAGE_GAME) {
-		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Current Game Settings (5/5):"));
+	else if(page_num == PAGE_GAME_2_DEFAULTS) {
+		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Default Game Settings #2 (5/7):"));
+		drawSettingEntryBoolean(page, &page_y_ofs, "Disable Patches:", swissSettings.disablePatches, option == SET_DEFAULT_DISABLE_PATCHES, true);
+	}
+	else if(page_num == PAGE_GAME_1) {
+		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Current Game Settings #1 (6/7):"));
 		bool enableGamePatches = file != NULL && gameConfig != NULL;
 		if(enableGamePatches) {
 			bool enableGameVideoPatches = enableGamePatches && !swissSettings.disableVideoPatches;
@@ -281,6 +299,17 @@ uiDrawObj_t* settings_draw_page(int page_num, int option, file_handle *file, Con
 			drawSettingEntryString(page, &page_y_ofs, "Invert Camera Stick:", invertCStickStr[swissSettings.invertCStick], option == SET_DEFAULT_INVERT_CAMERA, false);
 			drawSettingEntryBoolean(page, &page_y_ofs, "Emulate Audio Streaming:", swissSettings.emulateAudioStreaming, option == SET_DEFAULT_AUDIO_STREAMING, false);
 			drawSettingEntryBoolean(page, &page_y_ofs, "Emulate Read Speed:", swissSettings.emulateReadSpeed, option == SET_DEFAULT_READ_SPEED, false);
+		}
+	}
+	else if(page_num == PAGE_GAME_2) {
+		DrawAddChild(page, DrawLabel(page_x_ofs_key, 65, "Current Game Settings #2 (7/7):"));
+		bool enableGamePatches = file != NULL && gameConfig != NULL;
+		if(enableGamePatches) {
+			drawSettingEntryBoolean(page, &page_y_ofs, "Disable Patches:", gameConfig->disablePatches, option == SET_DISABLE_PATCHES, enableGamePatches);
+		}
+		else {
+			// Just draw the defaults again
+			drawSettingEntryBoolean(page, &page_y_ofs, "Disable Patches:", swissSettings.disablePatches, option == SET_DEFAULT_DISABLE_PATCHES, false);
 		}
 	}
 	// If we have a tooltip for this page/option, add a fading label telling the user to press Y for help
@@ -446,7 +475,7 @@ void settings_toggle(int page, int option, int direction, file_handle *file, Con
 			break;
 		}
 	}
-	else if(page == PAGE_GAME_DEFAULTS) {
+	else if(page == PAGE_GAME_1_DEFAULTS) {
 		switch(option) {
 			case SET_DEFAULT_FORCE_VIDEOMODE:
 				if(!swissSettings.disableVideoPatches) {
@@ -531,7 +560,14 @@ void settings_toggle(int page, int option, int direction, file_handle *file, Con
 			break;
 		}
 	}
-	else if(page == PAGE_GAME && file != NULL && gameConfig != NULL) {
+	else if(page == PAGE_GAME_2_DEFAULTS) {
+		switch(option) {
+			case SET_DEFAULT_DISABLE_PATCHES:
+				swissSettings.disablePatches ^= 1;
+			break;
+		}
+	}
+	else if(page == PAGE_GAME_1 && file != NULL && gameConfig != NULL) {
 		switch(option) {
 			case SET_FORCE_VIDEOMODE:
 				if(!swissSettings.disableVideoPatches) {
@@ -616,6 +652,13 @@ void settings_toggle(int page, int option, int direction, file_handle *file, Con
 			break;
 		}
 	}
+	else if(page == PAGE_GAME_2 && file != NULL && gameConfig != NULL) {
+		switch(option) {
+			case SET_DISABLE_PATCHES:
+				gameConfig->disablePatches ^= 1;
+			break;
+		}
+	}
 }
 
 int show_settings(file_handle *file, ConfigEntry *config) {
@@ -626,7 +669,7 @@ int show_settings(file_handle *file, ConfigEntry *config) {
 	
 	// Setup the settings for the current game
 	if(config != NULL) {
-		page = PAGE_GAME;
+		page = PAGE_GAME_1;
 	}
 		
 	while (PAD_ButtonsHeld(0) & PAD_BUTTON_A){ VIDEO_WaitVSync (); }
